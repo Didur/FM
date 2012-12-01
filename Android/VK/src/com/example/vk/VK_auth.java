@@ -1,5 +1,8 @@
 package com.example.vk;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.json.JSONArray;
 
 import android.R.string;
@@ -7,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.UriMatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,15 +37,28 @@ public class VK_auth extends Activity {
             public boolean shouldOverrideUrlLoading (WebView view, String url) {             
                super.shouldOverrideUrlLoading (view, url);   
                if (url.contains("access_token")) {
-                 Uri x = Uri.parse(url);           
-                 Log.d("fgdfdsf", x.getFragment())       ; 
+            	   String access_token = extractPattern(url, "access_token=(.*?)&");
+				   String user_id = extractPattern(url, "user_id=(\\d*)");                         
+                   Prefs.SetId(user_id);
+                   Prefs.SetToken(access_token);
+                   Log.d("ID", Prefs.GetId())  ; 
+                   Log.d("TOKEN", Prefs.GetToken())  ; 
                 }
 			   return false;
-            }     	
+            }
+
+			private String extractPattern(String str, String pattern) {
+				Pattern p = Pattern.compile(pattern);
+	            Matcher m = p.matcher(str);
+	            if (!m.find())
+	                return null;
+	            return m.toMatchResult().group(1);
+			}     	
         });
         
-        authWebView.loadUrl("https://oauth.vk.com/authorize?client_id=2967122&scope=messages,friends,video,offline&redirect_uri=http://oauth.vk.com/blank.html&display=mobile&response_type=token") ;
         
+        authWebView.loadUrl("https://oauth.vk.com/authorize?client_id=2967122&scope=messages,friends,video,offline&redirect_uri=http://oauth.vk.com/blank.html&display=mobile&response_type=token") ;
+ 
         setContentView(R.layout.activity_vk_auth);
         setContentView(authWebView);
     }
